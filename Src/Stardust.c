@@ -34,6 +34,23 @@ int Global_Init(struct glob_state_t *state, int argc, char **argv)
     state->windowed = 1;
     state->seed = 23232323;
     state->batch_size = k_Def_Batch_Size;
+
+	for (auto i = 0; i < argc; i++)
+	{
+		if (strcmp(argv[i], "-b") == 0)
+		{
+			if (argc > i)
+			{
+				state->batch_size = atoi(argv[i+1]);
+			}
+		}
+	}
+
+	if (state->batch_size == 0)
+	{
+		state->batch_size = 100;
+	}
+
     state->point_count = k_Def_Point_Count;
     for (int i = 0; i < 6 * 9; ++i) {
         RND_GEN(state->seed);

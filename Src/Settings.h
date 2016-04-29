@@ -15,7 +15,7 @@
 #define k_Def_Point_Count 2000000
 
 // Number of points per draw call
-#define k_Def_Batch_Size 10
+#define k_Def_Batch_Size 100
 
 // Metrics graph settings
 #define k_Graph_Samples 60

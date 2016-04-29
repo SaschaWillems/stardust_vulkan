@@ -2955,9 +2955,12 @@ static int Generate_Text(void)
 
     sprintf(str, "FPS %.1f (%.3f ms)", s_fps, s_ms);
  
-    s_font_letter_count += Add_Text(&ptr, str, 10, s_glob_state->height - 90);
-    s_font_letter_count += Add_Text(&ptr, "Stardust 1.1", 10, s_glob_state->height - 60);
-    s_font_letter_count += Add_Text(&ptr, s_gpu_properties.deviceName, 10, s_glob_state->height - 30);
+    s_font_letter_count += Add_Text(&ptr, str, 10, s_glob_state->height - 120);
+    s_font_letter_count += Add_Text(&ptr, "Stardust 1.1", 10, s_glob_state->height - 90);
+    s_font_letter_count += Add_Text(&ptr, s_gpu_properties.deviceName, 10, s_glob_state->height - 60);
+
+	sprintf(str, "Batch size = %d", s_glob_state->batch_size);
+	s_font_letter_count += Add_Text(&ptr, str, 10, s_glob_state->height - 30);
 
     vkUnmapMemory(s_gpu_device, s_font_buffer_mem[s_res_idx]);
 
@@ -3049,18 +3052,18 @@ int VK_Run(struct glob_state_t *state)
     }
 #endif
 
+	VkSemaphoreCreateInfo semaphoreInfo;
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	semaphoreInfo.pNext = NULL;
+	semaphoreInfo.flags = 0;
+	VKU_VR(vkCreateSemaphore(s_gpu_device, &semaphoreInfo, NO_ALLOC_CALLBACK,
+		&s_swap_chain_image_ready_semaphore));
+
     while (s_exit_code == STARDUST_CONTINUE) {
         int recalculate_fps = Update_Frame_Stats(&s_time, &s_time_delta, s_glob_state->frame,
                                                  0, &s_fps, &s_ms);
 
         Set_Exit_Code(Handle_Events(s_glob_state));
-
-        VkSemaphoreCreateInfo semaphoreInfo;
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        semaphoreInfo.pNext = NULL;
-        semaphoreInfo.flags = 0;
-        VKU_VR(vkCreateSemaphore(s_gpu_device, &semaphoreInfo, NO_ALLOC_CALLBACK,
-                                 &s_swap_chain_image_ready_semaphore));
 
         uint32_t swap_image_index;
         VKU_VR(vkAcquireNextImageKHR(s_gpu_device, s_swap_chain, UINT64_MAX,
@@ -3091,8 +3094,9 @@ int VK_Run(struct glob_state_t *state)
             Log("VKU_Present failed\n");
             Set_Exit_Code(STARDUST_ERROR);
         }
-        VKU_DESTROY(vkDestroySemaphore, s_swap_chain_image_ready_semaphore);
     }
+
+	VKU_DESTROY(vkDestroySemaphore, s_swap_chain_image_ready_semaphore);
 
 	if (s_exit_code != STARDUST_EXIT)
 	{
